@@ -1,0 +1,45 @@
+name: Deploy Lambda
+
+on:
+  push:
+    branches:
+      - main   # change if your branch is different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # ---- Lambda 1 ----
+      - name: Package DevOpsContentGenerator
+        run: |
+          cd LambdaHandler
+          zip ../DevOpsContentGenerator.zip DevOpsContentGenerator.py
+          cd ..
+
+      - name: Deploy DevOpsContentGenerator
+        run: |
+          aws lambda update-function-code \
+            --function-name DevOpsContentGenerator \
+            --zip-file fileb://DevOpsContentGenerator.zip
+
+      # ---- Lambda 2 ----
+      - name: Package LinkedInPost
+        run: |
+          cd LambdaHandler
+          zip ../LinkedInPost.zip LinkedInPostAutomator.py
+          cd ..
+
+      - name: Deploy LinkedInPost
+        run: |
+          aws lambda update-function-code \
+            --function-name LinkedInPost \
+            --zip-file fileb://LinkedInPost.zip
