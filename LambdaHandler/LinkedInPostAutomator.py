@@ -9,7 +9,6 @@ from datetime import datetime
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
 class LinkedInAutomator:
     def __init__(self):
         # Get credentials from Parameter Store
@@ -99,7 +98,7 @@ def send_notification(success: bool, result: str, msg: str = None):
     
     try:
         message = {
-            "post_id": result,
+            "Post": result,
             "status": "success" if success else "failed",
             "timestamp": datetime.now().isoformat()
         }
