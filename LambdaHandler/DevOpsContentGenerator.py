@@ -7,6 +7,7 @@ from typing import List, Dict
 from dataclasses import dataclass
 from enum import Enum
 import urllib3
+import boto3
 
 # Configure logging
 logger = logging.getLogger()
@@ -52,9 +53,28 @@ class DevOpsContentGenerator:
 
     def generate_content_ideas(self) -> Dict:
         content_types = list(ContentType)
-        last_selected_type = os.environ.get('LAST_CONTENT_TYPE')
+        key = "LAST_CONTENT_TYPE"
+        last_selected_type = os.environ.get(key)
         content_types = [ct for ct in content_types if ct.value != last_selected_type]
         content_type = random.choice(content_types)
+        
+        logger.info(f"Updating environment variable {key} to {content_type.value}")
+        client = boto3.client('lambda')
+        function_name='DevOpsContentGenerator'
+        response = client.get_function_configuration(
+            FunctionName=function_name
+        )
+
+        env_vars = response["Environment"]["Variables"]
+        if key in env_vars:
+            env_vars[key] = content_type.value
+
+        # Push update back
+        client.update_function_configuration(
+            FunctionName=function_name,
+            Environment={"Variables": env_vars}
+        )
+
         logger.info(f"Generating content idea for type: {content_type.value}")
         idea = self._create_content_idea(content_type)
         return idea
