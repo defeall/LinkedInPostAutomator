@@ -1,0 +1,10 @@
+numpy
+openai
+dotenv
+aiohttp
+IPython
+rich
+requests
+certifi
+boto3
+botocore
