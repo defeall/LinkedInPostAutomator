@@ -327,7 +327,7 @@ def lambda_handler(event, context):
                     'score': review['overall_score']
                 })
             }
-            
+             
     except Exception as e:
         logger.error(f"Error in lambda_handler: {str(e)}")
         return {
