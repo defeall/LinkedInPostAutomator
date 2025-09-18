@@ -4,7 +4,7 @@ import random
 import os
 from datetime import datetime
 from typing import List, Dict
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from enum import Enum
 import urllib3
 
@@ -52,6 +52,8 @@ class DevOpsContentGenerator:
 
     def generate_content_ideas(self) -> Dict:
         content_types = list(ContentType)
+        last_selected_type = os.environ.get('LAST_CONTENT_TYPE')
+        content_types = [ct for ct in content_types if ct.value != last_selected_type]
         content_type = random.choice(content_types)
         logger.info(f"Generating content idea for type: {content_type.value}")
         idea = self._create_content_idea(content_type)
