@@ -88,7 +88,7 @@ class LinkedInAutomator:
             logger.error(f"Failed to post on LinkedIn: {e}")
             return False, None
 
-def send_notification(success: bool, result: str, error_msg: str = None):
+def send_notification(success: bool, result: str, msg: str = None):
     """Send SNS notification about posting status"""
     sns = boto3.client("sns")
 
@@ -104,8 +104,8 @@ def send_notification(success: bool, result: str, error_msg: str = None):
             "timestamp": datetime.now().isoformat()
         }
         
-        if error_msg:
-            message["error"] = error_msg
+        if msg:
+            message["status"] = msg
         
         sns.publish(
             TopicArn=TOPIC_ARN,
@@ -169,7 +169,7 @@ def lambda_handler(event, context):
         logger.error(f"Error in lambda_handler: {str(e)}")
         
         # Send error notification
-        send_notification(False, str(e))
+        send_notification(False, str(e), "Error occurred in LinkedInPostAutomator")
         
         return {
             'statusCode': 500,
