@@ -3,7 +3,7 @@ name: Deploy Lambda
 on:
   push:
     branches:
-      - main   # change if your branch is different
+      - main
 
 jobs:
   deploy:

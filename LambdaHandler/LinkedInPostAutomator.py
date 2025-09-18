@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import boto3
-from botocore.exceptions import ClientError
 import urllib3
 from datetime import datetime
 
@@ -89,29 +88,33 @@ class LinkedInAutomator:
             logger.error(f"Failed to post on LinkedIn: {e}")
             return False, None
 
-# def send_notification(success: bool, post_id: str, error_msg: str = None):
-#     """Send SNS notification about posting status"""
-#     if not os.environ.get('NOTIFICATION_SNS_TOPIC'):
-#         return
+def send_notification(success: bool, result: str, error_msg: str = None):
+    """Send SNS notification about posting status"""
+    sns = boto3.client("sns")
+
+    TOPIC_ARN = os.environ.get('NOTIFICATION_SNS_TOPIC')
+
+    if not TOPIC_ARN:
+        return
     
-#     try:
-#         message = {
-#             "post_id": post_id,
-#             "status": "success" if success else "failed",
-#             "timestamp": datetime.now().isoformat()
-#         }
+    try:
+        message = {
+            "post_id": result,
+            "status": "success" if success else "failed",
+            "timestamp": datetime.now().isoformat()
+        }
         
-#         if error_msg:
-#             message["error"] = error_msg
+        if error_msg:
+            message["error"] = error_msg
         
-#         sns.publish(
-#             TopicArn=os.environ['NOTIFICATION_SNS_TOPIC'],
-#             Message=json.dumps(message),
-#             Subject=f"LinkedIn Post {'Successful' if success else 'Failed'}"
-#         )
-#         logger.info(f"Notification sent for post {post_id}")
-#     except Exception as e:
-#         logger.error(f"Error sending notification: {e}")
+        sns.publish(
+            TopicArn=TOPIC_ARN,
+            Message=json.dumps(message),
+            Subject=f"LinkedIn Post {'Successful' if success else 'Failed'}"
+        )
+        logger.info(f"Notification sent for post")
+    except Exception as e:
+        logger.error(f"Error sending notification: {e}")
 
 def lambda_handler(event, context):
     """
@@ -142,7 +145,7 @@ def lambda_handler(event, context):
         
         if result:
             # Send success notification
-            # send_notification(True, post_id)
+            send_notification(True, result, "Posted successfully to LinkedIn")
             
             return {
                 'statusCode': 200,
@@ -153,7 +156,7 @@ def lambda_handler(event, context):
             }
         else:
             # Send failure notification
-            # send_notification(False, post_id, "Failed to post to LinkedIn")
+            send_notification(False, result, "Failed to post to LinkedIn")
             
             return {
                 'statusCode': 500,
@@ -166,7 +169,7 @@ def lambda_handler(event, context):
         logger.error(f"Error in lambda_handler: {str(e)}")
         
         # Send error notification
-        # send_notification(False, event.get('post_id', 'unknown'), str(e))
+        send_notification(False, str(e))
         
         return {
             'statusCode': 500,
