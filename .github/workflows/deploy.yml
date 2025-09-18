@@ -24,12 +24,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-          
+
       # ---- Lambda 1 ----
       - name: Package DevOpsContentGenerator
         run: |
           cd LambdaHandler
-          zip ../DevOpsContentGenerator.zip DevOpsContentGenerator.py
+          cp DevOpsContentGenerator.py lambda_function.py
+          zip ../DevOpsContentGenerator.zip lambda_function.py
+          rm lambda_function.py
           cd ..
 
       - name: Deploy DevOpsContentGenerator
@@ -42,7 +44,9 @@ jobs:
       - name: Package LinkedInPost
         run: |
           cd LambdaHandler
-          zip ../LinkedInPost.zip LinkedInPostAutomator.py
+          cp LinkedInPostAutomator.py lambda_function.py
+          zip ../LinkedInPost.zip lambda_function.py
+          rm lambda_function.py
           cd ..
 
       - name: Deploy LinkedInPost
